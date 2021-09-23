@@ -1,0 +1,57 @@
+extract $
+extract obj_props
+scene = import "setup.spwn"
+
+// i this isn't how dict supposed to be used. so if you're writing anything, maybe don't use this as an example
+// it's convinient though
+
+camera = {
+    move : (
+        x: @number, y: @number,
+        duration: @number = 0,
+        easing: @easing_type = NONE,
+        easing_rate: @number = 2
+    ) {
+        $.add( trigger{
+            OBJ_ID: 901,
+            TARGET: scene.originPoint,
+            MOVE_X: x * -3,
+            MOVE_Y: y * -3,
+            DURATION: duration,
+            EASING: easing.id,
+            EASING_RATE: easing_rate,
+        })
+    },
+
+    follow : (
+        other: @group,
+        x_mod: @number = 1, y_mod: @number = 1,
+        duration: @number = 999
+    ){
+        $.add( trigger{
+            OBJ_ID: 1347,
+            X_MOD: x_mod * -1,
+            Y_MOD: y_mod * -1,
+            DURATION: duration,
+            TARGET: scene.originPoint,
+            FOLLOW: other,
+        })
+    },
+}
+return camera
+// wait, maybe gd stupid rotaion will make it snappy
+// oh also, the rotation gonna affect the move
+// ehh, you know what, maybe i should just throw away rotation
+
+// maybe there will be an issue if i want to make the camera follow an obj
+// actually no, move executed before follow, so the illusion didn't break
+
+// wait, what if i want to move camera to specific coordinate
+
+// a bit comvoluted maybe, i need to make an obj that always stay at cam center
+// it's specific to camera maybe 
+
+// il just make what i need for now
+//"fllapy bird lesgo"
+// make incremental move
+// 

@@ -1,0 +1,304 @@
+extract $
+extract obj_props
+setup = import "setup.spwn"
+
+type @sprite
+
+/*
+so the idea is to make an object which has a pivot point
+that pretty much it lol*/
+
+white = ?c
+white.set(255,255,255)
+
+//wait we also need to make it move following the camera
+
+
+// i should make a better naming for them
+
+//maybe i should make a more sophisticated argument for sprite, something similiar to obj and trigger
+//constructor | soon extended
+impl @sprite{
+    create_sprite : (mainGroup : @group ,pivotGroup : @group, collider : @block = ?b){
+        pivotGroup.follow(setup.originPoint)
+        mainGroup.follow(pivotGroup)
+        pivotGroup.toggle_off()
+        return{
+            type : @sprite,
+            main : mainGroup,
+            pivot : pivotGroup,
+            collider : collider,
+        }
+    },
+    // hm not sure how im gonna make an obj that made of multiple shape
+    // also maybe add pivot offset
+    //better. maybe just add a method do move the pivot
+    create_square:(x : @number, y : @number, size : @number = 10, withCollider : @bool = true, color : @color = white){
+        pivot = ?g
+        // mainGroup = ?g
+        add(obj {
+            OBJ_ID: 211,
+            X: x * setup.unitSize, Y: y * setup.unitSize,
+            SCALING: size / 10,
+            GROUPS: [pivot, setup.allPivot],
+        })
+        collider = ?b
+        if(withCollider){
+            add(obj {
+                OBJ_ID: 1816,
+                BLOCK_A : collider,
+                DYNAMIC_BLOCK  : true,
+                COLOR: setup.invisible,
+                X: x * setup.unitSize, Y: y * setup.unitSize,
+                SCALING: size / 10,
+                GROUPS: [pivot, setup.allPivot],
+            })
+        }
+        // could i not use mainGroup in this case ?
+        // $.add(obj {
+        //     OBJ_ID: 1765,
+        //     X: x * setup.unitSize, Y: y * setup.unitSize,
+        //     GROUPS: [pivot, setup.allPivot],
+        // })
+        // it might cause issue when i made follow other sprite
+        return{
+            type : @sprite,
+            main : pivot,
+            pivot : pivot,
+            collider : collider,
+        }
+    },
+    create_rect:(x : @number, y : @number, width : @number = 10, height : @number = 10, withCollider : @bool = true, color : @color = white){
+        blockScale = 1/30
+        collider = ?b
+        mainGroup = ?g
+        if height >= width{
+            blockNeeded = ceil(height/width)
+            for i in ..(blockNeeded-1){
+                add(obj {
+                    OBJ_ID: 211,
+                    X: x * setup.unitSize, Y: (y - (height / 2) + (width * (i + 0.5))) * setup.unitSize,
+                    SCALING: width * blockScale * setup.unitSize,
+                    GROUPS: mainGroup,
+                })
+            }
+            add(obj {
+                OBJ_ID: 211,
+                X: x * setup.unitSize, Y: (y + (height / 2) - (width / 2)) * setup.unitSize,
+                SCALING: width * blockScale * setup.unitSize,
+                GROUPS: mainGroup,
+            })
+            if(withCollider){
+                for i in ..(blockNeeded-1){
+                    add(obj {
+                        OBJ_ID: 1816,
+                        BLOCK_A : collider,
+                        DYNAMIC_BLOCK  : true,
+                        COLOR: setup.invisible,
+                        X: x * setup.unitSize, Y: (y - (height / 2) + (width * (i + 0.5))) * setup.unitSize,
+                        SCALING: width * blockScale * setup.unitSize,
+                        GROUPS: mainGroup,
+                    })
+                }
+                add(obj {
+                    OBJ_ID: 1816,
+                    BLOCK_A : collider,
+                    DYNAMIC_BLOCK  : true,
+                    COLOR: setup.invisible,
+                    X: x * setup.unitSize, Y: (y + (height / 2) - (width / 2)) * setup.unitSize,
+                    SCALING: width * blockScale * setup.unitSize,
+                    GROUPS: mainGroup,
+                })
+            }
+        }else{
+            blockNeeded = ceil(width/height)
+            for i in ..(blockNeeded-1){
+                add(obj {
+                    OBJ_ID: 1816,
+                    BLOCK_A : collider,
+                    DYNAMIC_BLOCK  : true,
+                    COLOR: setup.invisible,
+                    X: (x - (width/2) + (height*(i+0.5)) ) * setup.unitSize, Y: y * setup.unitSize,
+                    SCALING: height * blockScale * setup.unitSize,
+                    GROUPS: mainGroup,
+                })
+            }
+
+            add(obj {
+                OBJ_ID: 1816,
+                BLOCK_A : collider,
+                DYNAMIC_BLOCK  : true,
+                COLOR: setup.invisible,
+                X: (x + (width / 2) - (height / 2)) * setup.unitSize, Y: y * setup.unitSize,
+                SCALING: height * blockScale * setup.unitSize,
+                GROUPS: mainGroup,
+            })
+            if withCollider{
+                for i in ..(blockNeeded-1){
+                    add(obj {
+                        OBJ_ID: 211,
+                        X: (x - (width/2) + (height*(i+0.5)) ) * setup.unitSize, Y: y * setup.unitSize,
+                        SCALING: height * blockScale * setup.unitSize,
+                        GROUPS: mainGroup,
+                    })
+                }
+    
+                add(obj {
+                    OBJ_ID: 211,
+                    X: (x + (width / 2) - (height / 2)) * setup.unitSize, Y: y * setup.unitSize,
+                    SCALING: height * blockScale * setup.unitSize,
+                    GROUPS: mainGroup,
+                })
+            }
+        }
+
+        pivot = ?g
+        $.add(obj {
+            OBJ_ID: 1765,
+            X: x * setup.unitSize, Y: y * setup.unitSize,
+            GROUPS: [pivot, setup.allPivot],
+        })
+        mainGroup.follow(pivot)
+
+        return{
+            type : @sprite,
+            main : mainGroup,
+            pivot : pivot,
+            collider : collider,
+        }
+    },
+//  ill make the general version later
+// that prob imposible, still would be as long. idk if i should make a dict though
+    // create_shape:(mainGroup : @group ,x : @number ,y : @number){
+    //     pivot = ?g
+    //     $.add(obj {
+    //         OBJ_ID: 1765,
+    //         X: x * setup.unitSize, Y: y * setup.unitSize,
+    //         GROUPS: pivot,
+    //     })
+    //     mainGroup.follow(pivot)
+
+    //     return{
+    //         type : @sprite,
+    //         main : mainGroup,
+    //         pivot : pivot
+    //     }
+    // },
+}
+
+
+
+//Runtime method
+impl @sprite{
+    move:(
+        self,
+        x: @number, y: @number,
+        duration: @number = 0,
+        easing: @easing_type = NONE,
+        easing_rate: @number = 2
+    ) {
+        $.add( trigger{
+            OBJ_ID: 901,
+            TARGET: self.pivot,
+            MOVE_X: x * setup.unitSize,
+            MOVE_Y: y * setup.unitSize,
+            DURATION: duration,
+            EASING: easing.id,
+            EASING_RATE: easing_rate,
+        })
+    },
+    move_to:(
+        self,
+        x: @number | @NULL = null, y: @number | @NULL = null,
+        duration: @number = 0, 
+        easing: @easing_type = NONE,
+        easing_rate: @number = 2,
+    ){
+        //wait, what if i just make 2 move, move to origin and move with value to coordinate. idk if it gonna be slmooth or nah though
+        if x == null && y == null {
+            throw "At least one coordinate must be specified"
+        }
+        target = ?g
+        $.add(obj {
+            OBJ_ID: 1765,
+            X: x if x != null else 0,
+            Y: y if y != null else 0,
+            GROUPS: [target, setup.allPivot],
+        }, true)
+        self.pivot.move_to(target, duration, y == null, x == null, easing, easing_rate)
+    },
+    on_collision_enter:(
+        self,
+        other :  @sprite|@block|[@sprite|@block],
+        function: @trigger_function,
+    ){
+        if other.type == @array{
+            // if $.matches(other, [@sprite]){
+            //     for i in other{
+            //         on(collision(self.collider, i.collider), function)
+            //     }
+            // }else if $.matches(other, [@block]){
+            //     for i in other{
+            //         on(collision(self.collider, i), function)
+            //     }
+            // }else{
+            //     for i in other{
+            //         on(collision(self.collider, i if other.type == @block else i.collider), function)
+            //     }
+            // }
+            for i in other{
+                on(collision(self.collider, i if i.type == @block else i.collider), function)
+            }
+        }else{
+            on(collision(self.collider, other if other.type == @block else other.collider), function)
+        }
+    },
+    on_collision_exit:(
+        self,
+        other : @sprite|@block|[@sprite|@block],
+        function: @trigger_function,
+    ){
+        if $.matches(other, @array){
+            if $.matches(other, [@sprite]){
+        //  im not sure which one is faster
+            //     for i in other{
+            //         on(collision_exit(self.collider, i.collider), function)
+            //     }
+            // }else if $.matches(other, [@block]){
+            //     for i in other{
+            //         on(collision_exit(self.collider, i), function)
+            //     }
+            // }else{
+            //     for i in other{
+            //         on(collision_exit(self.collider, other if other.type == @block else other.collider), function)
+            //     }
+                for i in other{
+                    on(collision_exit(self.collider, i if i.type == @block else i.collider), function)
+                }
+            }
+        }else{
+            on(collision_exit(self.collider, other if other.type == @block else other.collider), function)
+        }
+    }
+//add endless move / set speed
+//add follow other sprite and regualr
+
+//  Move with the *3 coordinate system. new coorniate system adopt this
+    // moveClassic:(
+    //     self,
+    //     x: @number, y: @number,
+    //     duration: @number = 0,
+    //     easing: @easing_type = NONE,
+    //     easing_rate: @number = 2
+    // ) {
+    //     $.add( trigger{
+    //         OBJ_ID: 901,
+    //         TARGET: self.pivot,
+    //         MOVE_X: x * 3,
+    //         MOVE_Y: y * 3,
+    //         DURATION: duration,
+    //         EASING: easing.id,
+    //         EASING_RATE: easing_rate,
+    //     })
+    // },
+}

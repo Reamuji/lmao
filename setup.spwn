@@ -1,0 +1,68 @@
+#[cache_output] // make it only executed once
+extract $
+extract obj_props
+
+//new coordinate system
+
+//in game 0,0 to our new 0,0
+block = 30
+xOffset = 2.5 * block
+yOffset = 5 * block
+
+invis = ?c
+invis.set(255,255,255,0)
+// white = ?c
+// white.set(255,255,255)
+
+// center of in game camera. will be the point 0,0 in our new coordinate system
+originPoint = ?g
+$.add(obj {
+    OBJ_ID: 1765,
+    X: 0, Y: 0,
+    GROUPS: originPoint,
+})
+originPoint.toggle_off()
+
+originPoint.lock_to_player(lock_y = false)
+
+//hide player
+$.add(trigger {
+    OBJ_ID: 1612,
+})
+
+//a group that will be included in every pivot point
+//to make an illusion of a moving camera
+allPivot= ?g
+//UI = ?g
+
+allPivot.follow(originPoint)
+allPivot.toggle_off()
+
+originPoint.move(xOffset/3,yOffset/3)
+
+return{
+    allPivot : allPivot,
+    originPoint : originPoint,
+    //xOffset : xOffset,
+    //yOffset : yOffset,
+    unitSize : 3,
+    invisible : invis,
+}
+
+
+// maybe i should've just make one obj, origin 
+// wait, hmm
+// i could either make every obj follow origin
+// or make a group called camera which follow origin and put every obj inside it
+
+// maybe i should make a dict of macro which filled with camera method and and rename the camera group
+
+// maybe there will be an issue if i want to make the camera follow an obj
+// actually no, move executed before follow, so the illusion didn't break
+
+//  i feel like we need to make an objthat is always at the center of camera, idk why though
+//  for UI maybe
+
+//instead of group for all obj
+//or should i just make a follow everytime ? i still need to add a follow in some case anyway
+//nah, if player want to add obj manually i should just make it easy for em
